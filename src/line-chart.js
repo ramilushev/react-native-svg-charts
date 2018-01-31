@@ -35,6 +35,7 @@ class LineChart extends PureComponent {
 
         const {
                   dataPoints,
+                  dataPointsX,
                   style,
                   animate,
                   animationDuration,
@@ -73,21 +74,53 @@ class LineChart extends PureComponent {
             .domain(extent)
             .range([ height - bottom, top ])
 
-        const x = scale.scaleLinear()
+        let x;
+
+        if (dataPointsX) {
+          x = scale.scaleLinear()
+            .domain(array.extent(dataPointsX))
+            .range([left, width - right])
+        } else {
+          x = scale.scaleLinear()
             .domain([ 0, dataPoints.length - 1 ])
             .range([ left, width - right ])
+        }
 
-        const line = this._createLine(
+        // const x = scale.scaleLinear()
+        //     .domain([ 0, dataPoints.length - 1 ])
+        //     .range([ left, width - right ])
+
+        let line;
+        let shadow;
+
+        if (dataPointsX) {
+          line = this._createLine(
             dataPoints,
             value => y(value),
-            (value, index) => x(index),
-        )
+            (value, index) => x(dataPointsX[index])
+          )
 
-        const shadow = this._createLine(
+          // console.log(line)
+
+          shadow = this._createLine(
             dataPoints,
             value => y(value - shadowOffset),
-            (value, index) => x(index),
-        )
+            (value, index) => x(dataPointsX[index])
+          )
+        } else {
+          line = this._createLine(
+              dataPoints,
+              value => y(value),
+              (value, index) => x(index),
+          )
+
+          shadow = this._createLine(
+              dataPoints,
+              value => y(value - shadowOffset),
+              (value, index) => x(index),
+          )
+        }
+
 
         return (
             <View style={style}>
